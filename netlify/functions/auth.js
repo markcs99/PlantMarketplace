@@ -9,6 +9,7 @@ const supabase = createClient(
 );
 
 // Debug logging
+console.log('Auth function loaded');
 console.log('Supabase URL:', process.env.SUPABASE_URL);
 console.log('JWT Secret length:', process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0);
 
@@ -54,7 +55,14 @@ exports.handler = async (event, context) => {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json'
   };
+
+  // Debug request information
+  console.log('Auth function called with:');
+  console.log('  Method:', event.httpMethod);
+  console.log('  Path:', event.path);
+  console.log('  Headers:', JSON.stringify(event.headers));
 
   // Handle preflight OPTIONS request
   if (event.httpMethod === 'OPTIONS') {
@@ -66,11 +74,41 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    console.log('Auth function called with method:', event.httpMethod);
     console.log('Request body:', event.body);
     
-    const { action, ...data } = JSON.parse(event.body);
-    console.log('Action:', action, 'Data:', data);
+    if (!event.body) {
+      console.log('No request body provided');
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Request body is required' }),
+      };
+    }
+    
+    let parsedBody;
+    try {
+      parsedBody = JSON.parse(event.body);
+      console.log('Parsed body:', JSON.stringify(parsedBody));
+    } catch (error) {
+      console.error('Error parsing JSON body:', error);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Invalid JSON in request body' }),
+      };
+    }
+    
+    const { action, ...data } = parsedBody;
+    console.log('Action:', action, 'Data:', JSON.stringify(data));
+
+    if (!action) {
+      console.log('No action specified in request');
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Action is required' }),
+      };
+    }
 
     switch (action) {
       case 'register': {

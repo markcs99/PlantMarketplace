@@ -37,7 +37,8 @@ export function AuthProvider({ children }) {
   // Verify token with API
   const verifyToken = async (tokenToVerify) => {
     try {
-      const response = await fetch(`${API_URL}/auth`, {
+      console.log('Verifying token with API...');
+      const response = await fetch(`${API_URL}/auth/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +49,9 @@ export function AuthProvider({ children }) {
         }),
       });
 
+      console.log('Token verification response status:', response.status);
       const data = await response.json();
+      console.log('Token verification response data:', data);
       
       if (response.ok) {
         setUser(data.user);
@@ -70,8 +73,9 @@ export function AuthProvider({ children }) {
   // Login user
   const login = async (email, password) => {
     try {
+      console.log('Logging in user:', email);
       // Call the login API
-      const response = await fetch(`${API_URL}/auth`, {
+      const response = await fetch(`${API_URL}/auth/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +87,13 @@ export function AuthProvider({ children }) {
         }),
       });
 
+      console.log('Login response status:', response.status);
+      if (response.redirected) {
+        console.log('Login was redirected to:', response.url);
+      }
+      
       const data = await response.json();
+      console.log('Login response data:', data);
       
       if (response.ok) {
         // Store token in localStorage
@@ -107,8 +117,9 @@ export function AuthProvider({ children }) {
   // Register new user
   const register = async (name, email, password, location) => {
     try {
-      // Call the register API
-      const response = await fetch(`${API_URL}/auth`, {
+      console.log('Registering user with data:', { name, email, location });
+      // Call the register API with trailing slash to prevent redirect
+      const response = await fetch(`${API_URL}/auth/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,8 +133,22 @@ export function AuthProvider({ children }) {
         }),
       });
 
-      const data = await response.json();
-      console.log('Registration response:', data);
+      console.log('Registration response status:', response.status);
+      if (response.redirected) {
+        console.log('Registration was redirected to:', response.url);
+      }
+      
+      // Check if we got a valid JSON response
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+        console.log('Registration response data:', data);
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        return { success: false, message: 'Server returned invalid response format' };
+      }
       
       if (response.ok) {
         // Store token in localStorage
@@ -140,7 +165,7 @@ export function AuthProvider({ children }) {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      return { success: false, message: 'An error occurred during registration' };
+      return { success: false, message: `An error occurred during registration: ${error.message}` };
     }
   };
 
@@ -161,7 +186,7 @@ export function AuthProvider({ children }) {
     
     try {
       // Call the update profile API
-      const response = await fetch(`${API_URL}/user/profile`, {
+      const response = await fetch(`${API_URL}/user/profile/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
