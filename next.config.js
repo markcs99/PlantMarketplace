@@ -2,6 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  // Explicitly tell Next.js where to find pages
+  distDir: '.next',
   images: {
     domains: ['images.pexels.com', 'images.unsplash.com', 'via.placeholder.com', 'randomuser.me', 'ui-avatars.com', 'carrier-assets.vinted.com', 'api.dicebear.com'],
     formats: ['image/avif', 'image/webp'],

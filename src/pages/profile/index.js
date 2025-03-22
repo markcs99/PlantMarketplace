@@ -13,68 +13,14 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState('listings');
   const [listings, setListings] = useState([]);
   const [purchases, setPurchases] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data - in a real application, this would be fetched from an API
+  // Initialize with empty data - in a real application, this would fetch from API
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setListings([
-        {
-          id: 1,
-          title: 'Monstera Deliciosa',
-          price: 35.50,
-          image: 'https://images.pexels.com/photos/3097770/pexels-photo-3097770.jpeg?auto=compress&cs=tinysrgb&w=800',
-          status: 'active',
-          createdAt: '2025-03-15',
-          views: 24,
-          likes: 5
-        },
-        {
-          id: 2,
-          title: 'Fiddle Leaf Fig',
-          price: 42.99,
-          image: 'https://images.pexels.com/photos/2132227/pexels-photo-2132227.jpeg?auto=compress&cs=tinysrgb&w=800',
-          status: 'sold',
-          createdAt: '2025-03-10',
-          views: 36,
-          likes: 8
-        },
-        {
-          id: 3,
-          title: 'Snake Plant',
-          price: 19.99,
-          image: 'https://images.pexels.com/photos/2123482/pexels-photo-2123482.jpeg?auto=compress&cs=tinysrgb&w=800',
-          status: 'active',
-          createdAt: '2025-03-05',
-          views: 15,
-          likes: 2
-        }
-      ]);
-
-      setPurchases([
-        {
-          id: 101,
-          title: 'Peace Lily',
-          price: 28.50,
-          image: 'https://images.pexels.com/photos/4503732/pexels-photo-4503732.jpeg?auto=compress&cs=tinysrgb&w=800',
-          seller: 'PlantLover123',
-          purchaseDate: '2025-03-18',
-          status: 'delivered'
-        },
-        {
-          id: 102,
-          title: 'ZZ Plant',
-          price: 24.99,
-          image: 'https://images.pexels.com/photos/1084199/pexels-photo-1084199.jpeg?auto=compress&cs=tinysrgb&w=800',
-          seller: 'GreenThumb',
-          purchaseDate: '2025-03-12',
-          status: 'in transit'
-        }
-      ]);
-
-      setIsLoading(false);
-    }, 1000);
+    // In future implementations this would be an API call to get the user's listings and purchases
+    setListings([]);
+    setPurchases([]);
+    setIsLoading(false);
   }, []);
 
   // Redirect if not authenticated
@@ -141,9 +87,9 @@ export default function Profile() {
                 />
               </div>
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-2xl font-bold">{typeof user?.name === 'string' ? user.name : 'User'}</h1>
-                <p className="text-gray-600 mb-2">{typeof user?.email === 'string' ? user.email : 'user@example.com'}</p>
-                <p className="text-gray-600 mb-4">{typeof user?.location === 'string' ? user.location : 'Bratislava, Slovakia'}</p>
+                <h1 className="text-2xl font-bold">{user?.name || 'User'}</h1>
+                <p className="text-gray-600 mb-2">{user?.email || ''}</p>
+                <p className="text-gray-600 mb-4">{user?.location || ''}</p>
                 <div className="flex flex-wrap justify-center md:justify-start gap-2">
                   <Link href="/profile/edit">
                     <a className="btn-outline-sm">Edit Profile</a>
@@ -212,119 +158,31 @@ export default function Profile() {
                     </Link>
                   </div>
 
-                  {listings.length === 0 ? (
-                    <div className="text-center py-10 bg-gray-50 rounded-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <h3 className="text-lg font-medium text-gray-800 mb-2">No Plants Listed Yet</h3>
-                      <p className="text-gray-600 mb-4">Start selling your plants and connect with plant lovers across Slovakia.</p>
-                      <Link href="/sell">
-                        <a className="btn-primary">Sell Your First Plant</a>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {listings.map(listing => (
-                        <div key={listing.id} className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                          <div className="relative h-48 bg-gray-200">
-                            <div className={`absolute top-2 right-2 z-10 px-2 py-1 text-xs font-medium text-white rounded-full ${
-                              listing.status === 'active' ? 'bg-green-500' : 'bg-gray-500'
-                            }`}>
-                              {listing.status === 'active' ? 'Active' : 'Sold'}
-                            </div>
-                            <img
-                              src={getImageUrl(listing.image)}
-                              alt={listing.title}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                console.log('Listing image failed to load:', listing.title);
-                                e.target.src = `https://via.placeholder.com/300x200/E9F5E9/3F9142?text=${encodeURIComponent(listing.title || 'Plant Image')}`;
-                              }}
-                            />
-                          </div>
-                          <div className="p-4">
-                            <h3 className="font-medium text-gray-900 mb-1">{listing.title}</h3>
-                            <p className="text-green-600 font-medium mb-2">€{listing.price.toFixed(2)}</p>
-                            <div className="flex text-sm text-gray-500 mb-3">
-                              <span className="mr-3">
-                                <span className="font-medium text-gray-700">{listing.views}</span> views
-                              </span>
-                              <span>
-                                <span className="font-medium text-gray-700">{listing.likes}</span> likes
-                              </span>
-                            </div>
-                            <div className="flex justify-between pt-2 border-t">
-                              <span className="text-xs text-gray-500">Listed on {listing.createdAt}</span>
-                              <div className="flex space-x-2">
-                                <button className="text-xs text-blue-600 hover:text-blue-800">Edit</button>
-                                {listing.status === 'active' && (
-                                  <button className="text-xs text-red-600 hover:text-red-800">Remove</button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div className="text-center py-10 bg-gray-50 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 className="text-lg font-medium text-gray-800 mb-2">No Plants Listed Yet</h3>
+                    <p className="text-gray-600 mb-4">Start selling your plants and connect with plant lovers across Slovakia.</p>
+                    <Link href="/sell">
+                      <a className="btn-primary">Sell Your First Plant</a>
+                    </Link>
+                  </div>
                 </div>
               ) : (
                 <div>
                   <h2 className="text-xl font-semibold mb-6">Plants You've Purchased</h2>
 
-                  {purchases.length === 0 ? (
-                    <div className="text-center py-10 bg-gray-50 rounded-lg">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                      <h3 className="text-lg font-medium text-gray-800 mb-2">No Purchases Yet</h3>
-                      <p className="text-gray-600 mb-4">Browse our marketplace to find the perfect plants for your collection.</p>
-                      <Link href="/marketplace">
-                        <a className="btn-primary">Browse Plants</a>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="divide-y">
-                      {purchases.map(purchase => (
-                        <div key={purchase.id} className="py-4 flex flex-col sm:flex-row">
-                          <div className="sm:w-32 h-32 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 mb-4 sm:mb-0 sm:mr-4">
-                            <img 
-                              src={getImageUrl(purchase.image)} 
-                              alt={purchase.title} 
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                console.log('Purchase image failed to load:', purchase.title);
-                                e.target.src = `https://via.placeholder.com/300x200/E9F5E9/3F9142?text=${encodeURIComponent(purchase.title || 'Plant Image')}`;
-                              }}
-                            />
-                          </div>
-                          <div className="flex-grow">
-                            <div className="flex flex-col sm:flex-row sm:justify-between mb-2">
-                              <h3 className="font-medium text-gray-900">{purchase.title}</h3>
-                              <p className="text-green-600 font-medium">€{purchase.price.toFixed(2)}</p>
-                            </div>
-                            <p className="text-gray-600 text-sm mb-2">Seller: {purchase.seller}</p>
-                            <p className="text-gray-600 text-sm mb-3">Purchased on {purchase.purchaseDate}</p>
-                            <div className="flex items-center">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                purchase.status === 'delivered' 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-blue-100 text-blue-800'
-                              }`}>
-                                {purchase.status === 'delivered' ? 'Delivered' : 'In Transit'}
-                              </span>
-                              {purchase.status === 'delivered' && (
-                                <button className="ml-4 text-sm text-blue-600 hover:text-blue-800">
-                                  Leave Review
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div className="text-center py-10 bg-gray-50 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    <h3 className="text-lg font-medium text-gray-800 mb-2">No Purchases Yet</h3>
+                    <p className="text-gray-600 mb-4">Browse our marketplace to find the perfect plants for your collection.</p>
+                    <Link href="/marketplace">
+                      <a className="btn-primary">Browse Plants</a>
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
@@ -337,29 +195,29 @@ export default function Profile() {
               <div>
                 <div className="mb-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-1">Email Address</h3>
-                  <p>{typeof user?.email === 'string' ? user.email : 'user@example.com'}</p>
+                  <p>{user?.email || 'Not provided'}</p>
                 </div>
                 <div className="mb-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-1">Member Since</h3>
-                  <p>{typeof user?.joinDate === 'string' ? user.joinDate : 'March 2024'}</p>
+                  <p>{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Recently'}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-1">Phone Number</h3>
-                  <p>{typeof user?.phone === 'string' ? user.phone : '+421 XXX XXX XXX'}</p>
+                  <p>{user?.phone || 'Not provided'}</p>
                 </div>
               </div>
               <div>
                 <div className="mb-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-1">Default Location</h3>
-                  <p>{typeof user?.location === 'string' ? user.location : 'Bratislava, Slovakia'}</p>
+                  <p>{user?.location || 'Not provided'}</p>
                 </div>
                 <div className="mb-4">
                   <h3 className="text-sm font-medium text-gray-700 mb-1">Payment Method</h3>
-                  <p>Card ending in {typeof user?.paymentCard === 'string' ? user.paymentCard : 'XXXX'}</p>
+                  <p>No payment methods saved</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-1">Shipping Address</h3>
-                  <p>{typeof user?.address === 'string' ? user.address : 'No address provided'}</p>
+                  <p>{user?.address || 'Not provided'}</p>
                 </div>
               </div>
             </div>

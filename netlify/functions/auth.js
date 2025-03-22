@@ -3,15 +3,23 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
 // Initialize Supabase client with admin privileges
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
-// Debug logging
+// Debug logging for environment variables
 console.log('Auth function loaded');
-console.log('Supabase URL:', process.env.SUPABASE_URL);
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Key exists:', !!supabaseKey);
 console.log('JWT Secret length:', process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0);
+
+// Initialize Supabase client
+let supabase;
+try {
+  supabase = createClient(supabaseUrl, supabaseKey);
+  console.log('Supabase client initialized successfully');
+} catch (error) {
+  console.error('Error initializing Supabase client:', error);
+}
 
 // Secret for JWT - in production should be a strong, environment-specific secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -110,6 +118,37 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Check if Supabase client is initialized
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Database connection not available' }),
+      };
+    }
+
+    // Test Supabase connection
+    try {
+      const { data: connectionTest, error: connectionError } = await supabase.from('users').select('count', { count: 'exact', head: true });
+      if (connectionError) {
+        console.error('Supabase connection test failed:', connectionError);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: 'Database connection failed', details: connectionError.message }),
+        };
+      }
+      console.log('Supabase connection test successful');
+    } catch (error) {
+      console.error('Error testing Supabase connection:', error);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Database connection error', details: error.message }),
+      };
+    }
+
     switch (action) {
       case 'register': {
         const { email, password, name, location } = data;
@@ -125,79 +164,137 @@ exports.handler = async (event, context) => {
           };
         }
         
-        // Check if user already exists
-        console.log('Checking if user already exists:', email);
-        const { data: existingUser, error: existingUserError } = await supabase
-          .from('users')
-          .select('id')
-          .eq('email', email)
-          .single();
-        
-        if (existingUserError && existingUserError.code !== 'PGRST116') {
-          console.log('Error checking existing user:', existingUserError);
-          throw existingUserError;
-        }
+        try {
+          // Check if user already exists
+          console.log('Checking if user already exists:', email);
+          const { data: existingUser, error: existingUserError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', email)
+            .single();
           
-        if (existingUser) {
-          console.log('User already exists:', email);
+          if (existingUserError) {
+            if (existingUserError.code !== 'PGRST116') {
+              console.log('Error checking existing user:', existingUserError);
+              return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ 
+                  error: 'Error checking user existence', 
+                  details: existingUserError.message || existingUserError.toString() 
+                }),
+              };
+            }
+          }
+            
+          if (existingUser) {
+            console.log('User already exists:', email);
+            return {
+              statusCode: 409,
+              headers,
+              body: JSON.stringify({ error: 'User already exists' }),
+            };
+          }
+          
+          // Hash password
+          console.log('Hashing password');
+          const { hash, salt } = hashPassword(password);
+          
+          // Generate avatar placeholder
+          const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}&backgroundColor=b6e3f4`;
+          console.log('Generated avatar URL:', avatarUrl);
+          
+          // Create user
+          console.log('Creating new user in Supabase');
+          console.log('User data being inserted:', { email, name, location });
+          
+          // Check if the users table exists
+          const { data: tableExists, error: tableCheckError } = await supabase
+            .from('users')
+            .select('id', { count: 'exact', head: true });
+            
+          if (tableCheckError) {
+            console.error('Error verifying users table:', tableCheckError);
+            return {
+              statusCode: 500,
+              headers,
+              body: JSON.stringify({ 
+                error: 'Database error - users table might not exist', 
+                details: tableCheckError.message || tableCheckError.toString() 
+              }),
+            };
+          }
+          
+          console.log('Users table verification successful');
+          
+          // Insert the user
+          const { data: newUser, error } = await supabase
+            .from('users')
+            .insert([
+              {
+                email,
+                name,
+                password_hash: hash,
+                password_salt: salt,
+                avatar: avatarUrl,
+                location: location || null,
+              },
+            ])
+            .select()
+            .single();
+            
+          if (error) {
+            console.error('Error creating user in Supabase:', error);
+            return {
+              statusCode: 500,
+              headers,
+              body: JSON.stringify({ 
+                error: 'Failed to create user', 
+                details: error.message || error.toString() 
+              }),
+            };
+          }
+          
+          if (!newUser) {
+            console.error('User creation returned no data');
+            return {
+              statusCode: 500,
+              headers,
+              body: JSON.stringify({ error: 'User creation returned no data' }),
+            };
+          }
+          
+          console.log('User created successfully:', newUser.id);
+          
+          // Generate token
+          console.log('Generating JWT token');
+          const token = generateToken(newUser);
+          
           return {
-            statusCode: 409,
+            statusCode: 201,
             headers,
-            body: JSON.stringify({ error: 'User already exists' }),
+            body: JSON.stringify({ 
+              message: 'User registered successfully',
+              token, 
+              user: {
+                id: newUser.id,
+                name: newUser.name,
+                email: newUser.email,
+                avatar: newUser.avatar,
+              }
+            }),
+          };
+        } catch (registerError) {
+          console.error('Unexpected error during registration:', registerError);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ 
+              error: 'Registration process failed', 
+              details: registerError.message || registerError.toString() 
+            }),
           };
         }
-        
-        // Hash password
-        console.log('Hashing password');
-        const { hash, salt } = hashPassword(password);
-        
-        // Generate avatar placeholder
-        const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}&backgroundColor=b6e3f4`;
-        console.log('Generated avatar URL');
-        
-        // Create user
-        console.log('Creating new user in Supabase');
-        console.log('User data being inserted:', { email, name, location });
-        const { data: newUser, error } = await supabase
-          .from('users')
-          .insert([
-            {
-              email,
-              name,
-              password_hash: hash,
-              password_salt: salt,
-              avatar: avatarUrl,
-              location: location || null,
-            },
-          ])
-          .select()
-          .single();
-          
-        if (error) {
-          console.error('Error creating user in Supabase:', error);
-          throw error;
-        }
-        
-        console.log('User created successfully:', newUser.id);
-        
-        // Generate token
-        console.log('Generating JWT token');
-        const token = generateToken(newUser);
-        
-        return {
-          statusCode: 201,
-          headers,
-          body: JSON.stringify({ 
-            message: 'User registered successfully',
-            token, 
-            user: {
-              id: newUser.id,
-              name: newUser.name,
-              email: newUser.email,
-              avatar: newUser.avatar,
-            }
-          }),
-        };
       }
       
       case 'login': {

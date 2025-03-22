@@ -14,6 +14,18 @@ const AuthContext = createContext({
 // Get API URL based on environment
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
+// For local development, point to our test server if netlify dev isn't available
+const TEST_SERVER_URL = 'http://localhost:3001/api';
+
+// Use the test server in development if available
+function getApiUrl() {
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    // Check if our test server is running
+    return TEST_SERVER_URL;
+  }
+  return API_URL;
+}
+
 // Auth Provider component
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -38,7 +50,12 @@ export function AuthProvider({ children }) {
   const verifyToken = async (tokenToVerify) => {
     try {
       console.log('Verifying token with API...');
-      const response = await fetch(`${API_URL}/auth/`, {
+      
+      // Use the API URL based on environment
+      let apiUrl = `${getApiUrl()}/auth/`;
+      console.log('Using API URL for token verification:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,8 +91,13 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       console.log('Logging in user:', email);
+      
+      // Use the API URL based on environment
+      let apiUrl = `${getApiUrl()}/auth/`;
+      console.log('Using API URL:', apiUrl);
+      
       // Call the login API
-      const response = await fetch(`${API_URL}/auth/`, {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,8 +140,22 @@ export function AuthProvider({ children }) {
   const register = async (name, email, password, location) => {
     try {
       console.log('Registering user with data:', { name, email, location });
+      
+      // Use the direct Netlify function URL to avoid potential redirect issues
+      let apiUrl;
+      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        // For local development with Netlify dev
+        apiUrl = `${getApiUrl()}/auth/`;
+        console.log('Using local API URL:', apiUrl);
+      } else {
+        // For production or preview deployments
+        apiUrl = `${API_URL}/auth/`;
+        console.log('Using production API URL:', apiUrl);
+      }
+      
       // Call the register API with trailing slash to prevent redirect
-      const response = await fetch(`${API_URL}/auth/`, {
+      console.log('Making registration request to URL:', apiUrl);
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,13 +177,20 @@ export function AuthProvider({ children }) {
       // Check if we got a valid JSON response
       let data;
       const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-        console.log('Registration response data:', data);
-      } else {
-        const text = await response.text();
-        console.error('Non-JSON response:', text);
-        return { success: false, message: 'Server returned invalid response format' };
+      console.log('Response content type:', contentType);
+      
+      try {
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+          console.log('Registration response data:', data);
+        } else {
+          const text = await response.text();
+          console.error('Non-JSON response:', text);
+          return { success: false, message: 'Server returned invalid response format' };
+        }
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
+        return { success: false, message: 'Could not parse server response' };
       }
       
       if (response.ok) {
@@ -185,8 +228,12 @@ export function AuthProvider({ children }) {
     if (!token) return { success: false, message: 'Not authenticated' };
     
     try {
+      // Use the API URL based on environment
+      let apiUrl = `${getApiUrl()}/user/profile/`;
+      console.log('Using API URL for profile update:', apiUrl);
+      
       // Call the update profile API
-      const response = await fetch(`${API_URL}/user/profile/`, {
+      const response = await fetch(apiUrl, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

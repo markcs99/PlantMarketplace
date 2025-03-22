@@ -35,28 +35,12 @@ export default function EditProfile() {
   // Initialize form with user data
   useEffect(() => {
     if (user) {
-      setName(typeof user.name === 'string' ? user.name : '');
-      setEmail(typeof user.email === 'string' ? user.email : '');
-      setPhone(typeof user.phone === 'string' ? user.phone : '');
-      setLocation(typeof user.location === 'string' ? user.location : 'Bratislava');
-      setBio(typeof user.bio === 'string' ? user.bio : '');
-      setAddress(typeof user.address === 'string' ? user.address : '');
-      
-      // If the user has a valid avatar URL, set it as the initial profile image
-      if (typeof user.avatar === 'string' && user.avatar.trim() !== '') {
-        // Create a temporary File object for display purposes
-        // In a real app, you might fetch the image and create a File object
-        const tempFile = {
-          name: 'profile-image.jpg',
-          type: 'image/jpeg',
-          size: 12345,
-          lastModified: Date.now()
-        };
-        
-        // In a real scenario, we would download and set this image
-        // For demo purposes we'll just set the URL directly
-        setProfileImage(null);
-      }
+      setName(user.name || '');
+      setEmail(user.email || '');
+      setPhone(user.phone || '');
+      setLocation(user.location || 'Bratislava');
+      setBio(user.bio || '');
+      setAddress(user.address || '');
     }
   }, [user]);
   
@@ -80,33 +64,30 @@ export default function EditProfile() {
     
     try {
       // Upload profile image if provided
-      let avatarUrl = typeof user?.avatar === 'string' ? user.avatar : null;
+      let avatarUrl = user?.avatar || null;
       
       if (profileImage) {
+        // In a real implementation, this would upload to your storage
+        // For now, we're just updating the URL in the user object
         avatarUrl = await uploadImage(profileImage, 'avatar');
       }
       
-      // In a real app, this would be an API call to update the user profile
-      // For demo, we simulate success and update the user context
-      setTimeout(() => {
-        // Create the updated user object with all fields as strings
-        const updatedUser = {
-          ...(user || {}),
-          id: user?.id || '123',
-          name: name || 'User',
-          email: email || 'user@example.com',
-          phone: phone || '',
-          location: location || 'Bratislava',
-          bio: bio || '',
-          address: address || '',
-          avatar: typeof avatarUrl === 'string' ? avatarUrl : '',
-          joinDate: user?.joinDate || 'March 2024'
-        };
-        
-        // Update user context
-        setUser(updatedUser);
-        
-        // Show success message
+      // Create updated user object
+      const updatedUser = {
+        ...user,
+        name: name || user?.name || '',
+        email: email || user?.email || '',
+        phone: phone || '',
+        location: location || 'Bratislava',
+        bio: bio || '',
+        address: address || '',
+        avatar: avatarUrl || user?.avatar || '',
+      };
+      
+      // Update user in the auth context
+      const result = await setUser(updatedUser);
+      
+      if (result.success) {
         setSuccess(true);
         setShowSuccess(true);
         
@@ -114,12 +95,13 @@ export default function EditProfile() {
         setTimeout(() => {
           setShowSuccess(false);
         }, 3000);
-        
-        setLoading(false);
-      }, 1000);
+      } else {
+        setError(result.message || 'Failed to update profile. Please try again.');
+      }
     } catch (err) {
       console.error("Error updating profile:", err);
       setError('An error occurred. Please try again later.');
+    } finally {
       setLoading(false);
     }
   };
@@ -153,7 +135,7 @@ export default function EditProfile() {
   // Get appropriate avatar for display
   const getAvatar = () => {
     try {
-      if (user?.avatar && typeof user.avatar === 'string') {
+      if (user?.avatar) {
         return getImageUrl(user.avatar, `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=E9F5E9&color=3F9142&size=128`);
       }
       return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=E9F5E9&color=3F9142&size=128`;
