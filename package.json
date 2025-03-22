@@ -1,0 +1,38 @@
+{
+  "name": "plant-marketplace",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "export": "next export",
+    "netlify-build": "next build"
+  },
+  "keywords": [
+    "plants",
+    "marketplace",
+    "ecommerce"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "A marketplace application for buying and selling plants",
+  "dependencies": {
+    "@stripe/react-stripe-js": "^2.9.0",
+    "@stripe/stripe-js": "^2.4.0",
+    "canvas": "^3.1.0",
+    "next": "12.3.4",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native-web": "^0.19.10",
+    "tailwindcss": "^3.4.1"
+  },
+  "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.10.1",
+    "autoprefixer": "^10.4.16",
+    "eslint": "8.56.0",
+    "eslint-config-next": "14.1.0",
+    "postcss": "^8.4.32"
+  }
+}

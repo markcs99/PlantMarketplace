@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-gray-800 antialiased;
+  }
+  h1 {
+    @apply text-3xl font-bold;
+  }
+  h2 {
+    @apply text-2xl font-bold;
+  }
+  h3 {
+    @apply text-xl font-bold;
+  }
+  a {
+    @apply text-primary hover:text-primary-dark transition-colors;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors;
+  }
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-primary-dark focus:ring-primary;
+  }
+  .btn-secondary {
+    @apply btn bg-secondary text-white hover:bg-secondary-dark focus:ring-secondary;
+  }
+  .btn-outline {
+    @apply btn border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500;
+  }
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6;
+  }
+  .input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+  }
+}
+
+/* Category placeholder backgrounds */
+.category-indoor {
+  background-image: url('https://images.unsplash.com/photo-1616046229478-9901c5536a45?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.category-outdoor {
+  background-image: url('https://images.unsplash.com/photo-1631260955243-ae2b05a46827?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.category-succulents {
+  background-image: url('https://images.unsplash.com/photo-1485955900006-10f4d324d411?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.category-herbs {
+  background-image: url('https://images.unsplash.com/photo-1580852300654-2d5b9d8999c2?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+/* Additional category background images */
+.category-rare {
+  background-image: url('https://images.unsplash.com/photo-1598880343039-12ace48e3409?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.category-tropical {
+  background-image: url('https://images.unsplash.com/photo-1567696153798-9111f9cd3d0d?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.category-seedlings {
+  background-image: url('https://images.unsplash.com/photo-1617694819426-f476aee8ae9b?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.category-cacti {
+  background-image: url('https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.category-ferns {
+  background-image: url('https://images.unsplash.com/photo-1622233987986-e0605e71e8a1?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.category-bonsai {
+  background-image: url('https://images.unsplash.com/photo-1599598177991-ec67b5c37318?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.category-hanging {
+  background-image: url('https://images.unsplash.com/photo-1604762512526-b7068d16a7d9?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+
+.category-accessories {
+  background-image: url('https://images.unsplash.com/photo-1485744455408-5363f9eda2bc?q=80&w=800&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+} 
