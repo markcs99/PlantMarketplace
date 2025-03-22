@@ -54,7 +54,7 @@ export default function Home() {
                 <a className="btn-primary">Browse Plants</a>
               </Link>
               <Link href="/sell">
-                <a className="btn bg-white text-primary hover:bg-gray-100">Sell Your Plants</a>
+                <a className="btn bg-white text-green-600 hover:bg-gray-100">Sell Your Plants</a>
               </Link>
             </div>
           </div>

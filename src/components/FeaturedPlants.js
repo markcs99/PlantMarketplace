@@ -62,7 +62,7 @@ export default function FeaturedPlants() {
               <div className="flex justify-between items-center mt-4">
                 <span className="text-xl font-bold text-primary">€{plant.price.toFixed(2)}</span>
                 <Link href={`/plant/${plant.id}`}>
-                  <a className="btn-primary text-sm">View Details</a>
+                  <a className="btn-primary-sm">View Details</a>
                 </Link>
               </div>
             </div>

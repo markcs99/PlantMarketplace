@@ -28,12 +28,12 @@ export default function Header() {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
             <Link href="/marketplace">
-              <span className={`cursor-pointer text-sm font-medium ${router.pathname === '/marketplace' ? 'text-green-600' : 'text-gray-700 hover:text-green-500'}`}>
+              <span className={`cursor-pointer text-sm font-medium px-4 py-2 ${router.pathname === '/marketplace' ? 'text-green-600' : 'text-gray-700 hover:text-green-500'}`}>
                 Browse Plants
               </span>
             </Link>
             <Link href="/sellers">
-              <span className={`cursor-pointer text-sm font-medium ${router.pathname === '/sellers' ? 'text-green-600' : 'text-gray-700 hover:text-green-500'}`}>
+              <span className={`cursor-pointer text-sm font-medium px-4 py-2 ${router.pathname === '/sellers' ? 'text-green-600' : 'text-gray-700 hover:text-green-500'}`}>
                 Find Sellers
               </span>
             </Link>
@@ -56,13 +56,13 @@ export default function Header() {
             {user ? (
               <div className="flex items-center space-x-4">
                 <Link href="/profile">
-                  <span className={`cursor-pointer text-sm font-medium ${router.pathname === '/profile' ? 'text-green-600' : 'text-gray-700 hover:text-green-500'}`}>
+                  <span className={`cursor-pointer text-sm font-medium px-4 py-2 ${router.pathname === '/profile' ? 'text-green-600' : 'text-gray-700 hover:text-green-500'}`}>
                     My Profile
                   </span>
                 </Link>
                 <button 
                   onClick={logout} 
-                  className="text-sm font-medium text-gray-700 hover:text-green-500"
+                  className="text-sm font-medium text-gray-700 hover:text-green-500 px-4 py-2"
                 >
                   Logout
                 </button>
@@ -70,12 +70,12 @@ export default function Header() {
             ) : (
               <div className="flex items-center space-x-4">
                 <Link href="/login">
-                  <span className={`cursor-pointer text-sm font-medium ${router.pathname === '/login' ? 'text-green-600' : 'text-gray-700 hover:text-green-500'}`}>
+                  <span className={`cursor-pointer text-sm font-medium px-4 py-2 ${router.pathname === '/login' ? 'text-green-600' : 'text-gray-700 hover:text-green-500'}`}>
                     Login
                   </span>
                 </Link>
                 <Link href="/signup">
-                  <span className="btn-primary">Sign Up</span>
+                  <span className="text-sm font-medium px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700">Sign Up</span>
                 </Link>
               </div>
             )}
@@ -144,7 +144,7 @@ export default function Header() {
                     </span>
                   </Link>
                   <Link href="/signup">
-                    <span className="btn-primary inline-block">Sign Up</span>
+                    <span className="text-sm font-medium px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 inline-block">Sign Up</span>
                   </Link>
                 </>
               )}

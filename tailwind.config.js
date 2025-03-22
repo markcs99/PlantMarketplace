@@ -8,24 +8,18 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          light: '#4ade80',
-          DEFAULT: '#22c55e',
-          dark: '#16a34a',
+          DEFAULT: '#4caf50',
+          dark: '#388e3c',
+          light: '#81c784',
         },
         secondary: {
-          light: '#bef264',
-          DEFAULT: '#a3e635',
-          dark: '#84cc16',
-        },
-        accent: {
-          light: '#fde68a',
-          DEFAULT: '#fcd34d',
-          dark: '#fbbf24',
+          DEFAULT: '#ff9800',
+          dark: '#f57c00',
+          light: '#ffb74d',
         },
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        serif: ['Merriweather', 'serif'],
       },
     },
   },

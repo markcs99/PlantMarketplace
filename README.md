@@ -1,193 +1,136 @@
 # Plant Marketplace
 
-A Next.js-based marketplace application for buying and selling plants.
+A modern marketplace application for buying and selling plants. Built with Next.js, Tailwind CSS, and Supabase.
 
 ## Features
 
-- Browse plant listings
-- User authentication
+- User authentication and account management
+- Product listings with search and filtering
 - Shopping cart functionality
 - Checkout process with Packeta delivery integration
-- User profiles
-- Responsive design
+- Order management
+- Reviews and ratings system
+- Seller profiles
+- Responsive design for all devices
 
-## Development
+## Tech Stack
 
-```bash
-# Install dependencies
-npm install
-
-# Run the development server
-npm run dev
-```
-
-The application will be available at [http://localhost:3000](http://localhost:3000).
-
-## Deployment to Netlify
-
-### Method 1: Deploy via Netlify CLI
-
-1. Install Netlify CLI globally (if not already installed):
-   ```bash
-   npm install -g netlify-cli
-   ```
-
-2. Login to Netlify:
-   ```bash
-   netlify login
-   ```
-
-3. Initialize Netlify site configuration:
-   ```bash
-   netlify init
-   ```
-
-4. Deploy to Netlify:
-   ```bash
-   netlify deploy --prod
-   ```
-
-### Method 2: Deploy via Netlify UI
-
-1. Push your code to a Git repository (GitHub, GitLab, or Bitbucket)
-
-2. Log in to [Netlify](https://app.netlify.com/)
-
-3. Click "New site from Git"
-
-4. Choose your Git provider and repository
-
-5. Configure build settings:
-   - Build command: `npm run build`
-   - Publish directory: `.next`
-
-6. Click "Deploy site"
-
-## Environment Variables
-
-For production deployment, you may want to set the following environment variables:
-
-- `NEXT_PUBLIC_API_URL`: API URL for backend services
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`: Stripe publishable key for payments
-
-## Notes
-
-- This application uses client-side localStorage for data persistence in the demo version
-- In a production environment, you would connect to a proper backend API
-
-## Technology Stack
-
-- **Frontend**: Next.js, React, React Native Web
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB with Mongoose
-- **Authentication**: JWT
-- **Image Storage**: Cloudinary
-- **Styling**: TailwindCSS, Styled Components
+- **Frontend**: Next.js, React, Tailwind CSS
+- **Backend**: Netlify Functions (Serverless)
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Custom JWT implementation with Supabase
+- **Deployment**: Netlify
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v14+)
+- Node.js (v14 or later)
 - npm or yarn
-- MongoDB instance
+- Supabase account
+- Netlify account (for deployment)
 
-### Installation
+### Local Development
 
 1. Clone the repository:
-   ```
+   ```bash
    git clone https://github.com/yourusername/plant-marketplace.git
    cd plant-marketplace
    ```
 
 2. Install dependencies:
-   ```
+   ```bash
    npm install
+   # or
+   yarn install
    ```
 
-3. Create a `.env.local` file in the root directory with the following variables:
-   ```
-   MONGODB_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret
-   CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-   CLOUDINARY_API_KEY=your_cloudinary_api_key
-   CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+3. Set up your environment variables:
+   - Copy `.env.local.example` to `.env.local`
+   - Update the Supabase credentials and other environment variables
+
+4. Download sample images:
+   ```bash
+   node download-images.js
    ```
 
-4. Run the development server:
-   ```
+5. Start the development server:
+   ```bash
    npm run dev
+   # or
+   yarn dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Deployment
+### Using Netlify Dev
 
-### Web Deployment
+To test serverless functions locally:
 
-1. Build the application:
+1. Install Netlify CLI globally:
+   ```bash
+   npm install -g netlify-cli
    ```
-   npm run build
+
+2. Start the Netlify development environment:
+   ```bash
+   npm run netlify-dev
+   # or 
+   yarn netlify-dev
    ```
 
-2. Deploy to your preferred hosting service (Vercel, Netlify, AWS, etc.).
+3. Open [http://localhost:8888](http://localhost:8888) in your browser.
 
-### Mobile Deployment
+## Production Setup
 
-For iOS and Android deployment, we'll use Capacitor to wrap our web application:
+For detailed production setup instructions, see [PROD-SETUP.md](./PROD-SETUP.md).
 
-1. Add Capacitor to your project
-2. Initialize Capacitor
-3. Add platforms (iOS/Android)
-4. Build and deploy to respective app stores
+### Quick Deployment Steps
 
-## Image Handling
+1. Create a Supabase project and set up the database schema:
+   - Use the `supabase-schema.sql` file to create all required tables
 
-The Plant Marketplace application includes several features for handling images:
+2. Deploy to Netlify:
+   - Connect your GitHub repository to Netlify
+   - Set the appropriate environment variables
+   - Deploy the application
 
-### Directory Structure
+## Folder Structure
 
-- `/public/images/plants` - For storing plant images
-- `/public/images/avatars` - For storing user profile images
-- `/public/images/categories` - For storing category images
+```
+plant-marketplace/
+├── netlify/                  # Netlify serverless functions
+│   └── functions/            # API endpoints
+├── public/                   # Static assets
+│   └── images/               # Product images
+├── src/                      # Source code
+│   ├── components/           # React components
+│   ├── contexts/             # Context providers
+│   ├── hooks/                # Custom React hooks
+│   ├── lib/                  # Utility functions and libraries
+│   ├── pages/                # Next.js pages
+│   └── styles/               # Global styles
+├── .env.local.example        # Example environment variables
+├── next.config.js            # Next.js configuration
+├── netlify.toml              # Netlify configuration
+├── supabase-schema.sql       # Database schema
+└── package.json              # Project dependencies
+```
 
-### Components
+## Contributing
 
-- `ImageUpload.js` - A reusable component for uploading images with preview functionality
-  - Supports single or multiple image uploads
-  - Provides image preview
-  - Handles drag-and-drop functionality
-  - Allows image removal
-
-### Utilities
-
-The application includes utility functions in `utils/image.js`:
-
-- `uploadImage(file, type)` - Simulates uploading an image and returns a URL
-- `getImageUrl(path, fallback)` - Gets the URL for an image or returns a fallback
-- `getPlaceholderImage(width, height, text)` - Generates a placeholder image with specified dimensions and text
-
-### Implementation
-
-Images are handled in several key areas:
-
-1. **Sell Page**: Users can upload up to 5 images when listing a plant for sale
-2. **Profile Page**: Users can view their profile picture and plant listings with images
-3. **Edit Profile Page**: Users can upload and update their profile picture
-4. **Plant Detail Page**: Displays multiple images in a gallery for each plant
-5. **Cart Page**: Shows thumbnail images of plants in the user's cart
-
-### Fallback Handling
-
-All image components include fallback handling to ensure a good user experience even when images fail to load.
-
-## Other Features
-
-- **Contact Form** - Allows users to contact the platform with questions or concerns
-- **FAQ Page** - Provides answers to common questions about the platform
-- **Terms of Service** - Outlines the rules and guidelines for using the platform
-- **Privacy Policy** - Explains how user data is collected, used, and protected
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-This project is licensed under the ISC License. 
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Plant images courtesy of Unsplash
+- Icons from Heroicons
+- UI inspiration from various plant selling websites 

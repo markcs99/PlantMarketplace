@@ -42,8 +42,9 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      // Call the register function with name, email, and password
-      const result = await register(name, email, password);
+      console.log('Submitting registration with location:', location);
+      // Call the register function with name, email, password, and location
+      const result = await register(name, email, password, location);
       
       if (result.success) {
         // If registration was successful, redirect to home page
@@ -54,7 +55,8 @@ export default function Signup() {
         setIsLoading(false);
       }
     } catch (err) {
-      setError('An error occurred during signup. Please try again.');
+      console.error('Registration error:', err);
+      setError('An error occurred during registration. Please try again.');
       setIsLoading(false);
     }
   };

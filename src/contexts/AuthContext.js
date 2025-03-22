@@ -7,119 +7,141 @@ const AuthContext = createContext({
   login: () => {},
   logout: () => {},
   register: () => {},
-  setUser: () => {}
+  setUser: () => {},
+  loading: true
 });
 
-// Mock database of users (in a real app this would be in a database)
-const MOCK_USERS_KEY = 'plant_marketplace_users';
+// Get API URL based on environment
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 // Auth Provider component
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(null);
 
   // Initialize auth state from localStorage on component mount
   useEffect(() => {
-    // Check for user data in localStorage
-    const userData = localStorage.getItem('user');
-    const authToken = localStorage.getItem('authToken');
-
-    if (userData && authToken) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
-      } catch (error) {
-        // Invalid stored data
-        localStorage.removeItem('user');
-        localStorage.removeItem('authToken');
-      }
-    }
+    // Check for stored token
+    const storedToken = localStorage.getItem('authToken');
     
-    setLoading(false);
+    if (storedToken) {
+      setToken(storedToken);
+      verifyToken(storedToken);
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  // Helper function to get users from localStorage
-  const getUsers = () => {
-    const users = localStorage.getItem(MOCK_USERS_KEY);
-    return users ? JSON.parse(users) : [];
-  };
+  // Verify token with API
+  const verifyToken = async (tokenToVerify) => {
+    try {
+      const response = await fetch(`${API_URL}/auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'verify',
+          token: tokenToVerify 
+        }),
+      });
 
-  // Helper function to save users to localStorage
-  const saveUsers = (users) => {
-    localStorage.setItem(MOCK_USERS_KEY, JSON.stringify(users));
+      const data = await response.json();
+      
+      if (response.ok) {
+        setUser(data.user);
+        setIsAuthenticated(true);
+      } else {
+        // Token is invalid, clear storage
+        localStorage.removeItem('authToken');
+        setToken(null);
+      }
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      localStorage.removeItem('authToken');
+      setToken(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Login user
   const login = async (email, password) => {
-    // Get users from localStorage
-    const users = getUsers();
-    
-    // Find user with matching email
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    // Check if user exists and password matches
-    if (!user) {
-      return { success: false, message: "No account found with this email" };
+    try {
+      // Call the login API
+      const response = await fetch(`${API_URL}/auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'login',
+          email, 
+          password 
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Store token in localStorage
+        localStorage.setItem('authToken', data.token);
+        
+        // Set auth state
+        setToken(data.token);
+        setUser(data.user);
+        setIsAuthenticated(true);
+        
+        return { success: true, user: data.user };
+      } else {
+        return { success: false, message: data.error || 'Login failed' };
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, message: 'An error occurred during login' };
     }
-    
-    if (user.password !== password) {
-      return { success: false, message: "Incorrect password" };
-    }
-    
-    // Create user object without password for client
-    const userWithoutPassword = { ...user };
-    delete userWithoutPassword.password;
-    
-    // Set auth state
-    setUser(userWithoutPassword);
-    setIsAuthenticated(true);
-    
-    // Store in localStorage
-    localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-    localStorage.setItem('authToken', 'mock-jwt-token-' + Date.now());
-    
-    return { success: true, user: userWithoutPassword };
   };
 
   // Register new user
-  const register = async (name, email, password) => {
-    // Get users from localStorage
-    const users = getUsers();
-    
-    // Check if email is already in use
-    if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-      return { success: false, message: "Email is already in use" };
+  const register = async (name, email, password, location) => {
+    try {
+      // Call the register API
+      const response = await fetch(`${API_URL}/auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          action: 'register',
+          name, 
+          email, 
+          password,
+          location
+        }),
+      });
+
+      const data = await response.json();
+      console.log('Registration response:', data);
+      
+      if (response.ok) {
+        // Store token in localStorage
+        localStorage.setItem('authToken', data.token);
+        
+        // Set auth state
+        setToken(data.token);
+        setUser(data.user);
+        setIsAuthenticated(true);
+        
+        return { success: true, user: data.user };
+      } else {
+        return { success: false, message: data.error || 'Registration failed' };
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { success: false, message: 'An error occurred during registration' };
     }
-    
-    // Create new user
-    const newUser = {
-      id: Date.now().toString(),
-      name,
-      email,
-      password,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
-      createdAt: new Date().toISOString()
-    };
-    
-    // Add to users array
-    users.push(newUser);
-    saveUsers(users);
-    
-    // Create user object without password for client
-    const userWithoutPassword = { ...newUser };
-    delete userWithoutPassword.password;
-    
-    // Set auth state
-    setUser(userWithoutPassword);
-    setIsAuthenticated(true);
-    
-    // Store in localStorage
-    localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-    localStorage.setItem('authToken', 'mock-jwt-token-' + Date.now());
-    
-    return { success: true, user: userWithoutPassword };
   };
 
   // Logout user
@@ -127,30 +149,39 @@ export function AuthProvider({ children }) {
     // Clear auth state
     setUser(null);
     setIsAuthenticated(false);
+    setToken(null);
     
     // Remove from localStorage
-    localStorage.removeItem('user');
     localStorage.removeItem('authToken');
   };
 
   // Update user data
-  const updateUser = (userData) => {
-    // Update localStorage and state
-    if (userData) {
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+  const updateUser = async (userData) => {
+    if (!token) return { success: false, message: 'Not authenticated' };
+    
+    try {
+      // Call the update profile API
+      const response = await fetch(`${API_URL}/user/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
       
-      // Also update the user in the users array
-      const users = getUsers();
-      const userIndex = users.findIndex(u => u.id === user.id);
-      
-      if (userIndex >= 0) {
-        // Keep the password from the existing record
-        const existingPassword = users[userIndex].password;
-        users[userIndex] = { ...updatedUser, password: existingPassword };
-        saveUsers(users);
+      if (response.ok) {
+        // Update local state
+        setUser(prev => ({ ...prev, ...data.user }));
+        return { success: true, user: data.user };
+      } else {
+        return { success: false, message: data.error || 'Failed to update profile' };
       }
+    } catch (error) {
+      console.error('Update user error:', error);
+      return { success: false, message: 'An error occurred during profile update' };
     }
   };
 
@@ -162,7 +193,8 @@ export function AuthProvider({ children }) {
     logout,
     register,
     setUser: updateUser,
-    loading
+    loading,
+    token
   };
 
   return (

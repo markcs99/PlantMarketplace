@@ -3,9 +3,9 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['images.pexels.com', 'images.unsplash.com', 'via.placeholder.com', 'randomuser.me', 'ui-avatars.com', 'carrier-assets.vinted.com'],
+    domains: ['images.pexels.com', 'images.unsplash.com', 'via.placeholder.com', 'randomuser.me', 'ui-avatars.com', 'carrier-assets.vinted.com', 'api.dicebear.com'],
     formats: ['image/avif', 'image/webp'],
-    unoptimized: process.env.NODE_ENV === 'production',
+    unoptimized: true,
   },
   // Fix for potential CORS issues with external images
   async headers() {
