@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 // Initialize Supabase client with admin privileges
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 
 // Debug logging for environment variables
 console.log('Auth function loaded');
@@ -16,8 +16,14 @@ console.log('JWT Secret length:', process.env.JWT_SECRET ? process.env.JWT_SECRE
 // Initialize Supabase client
 let supabase;
 try {
-  supabase = createClient(supabaseUrl, supabaseKey);
-  console.log('Supabase client initialized successfully');
+  // Use createClient with service role key to bypass RLS policies
+  supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+  console.log('Supabase client initialized successfully with service role key');
 } catch (error) {
   console.error('Error initializing Supabase client:', error);
 }
