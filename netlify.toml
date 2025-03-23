@@ -19,11 +19,6 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Base environment settings (development)
-[build.environment]
-  NODE_ENV = "development"
-  NEXT_PUBLIC_ENV = "development"
-
 # Production environment settings (main branch)
 [context.production.environment]
   NODE_ENV = "production"
