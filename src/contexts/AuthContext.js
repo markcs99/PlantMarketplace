@@ -14,14 +14,14 @@ const AuthContext = createContext({
 // Get API URL based on environment
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
-// For local development, point to our test server if netlify dev isn't available
-const TEST_SERVER_URL = 'http://localhost:3001/api';
+// For local development, point to Netlify Dev server
+const NETLIFY_DEV_URL = 'http://localhost:8888/api';
 
-// Use the test server in development if available
+// Use the correct development server URL
 function getApiUrl() {
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    // Check if our test server is running
-    return TEST_SERVER_URL;
+    // In local development, use Netlify Dev server
+    return NETLIFY_DEV_URL;
   }
   return API_URL;
 }
@@ -153,61 +153,83 @@ export function AuthProvider({ children }) {
         console.log('Using production API URL:', apiUrl);
       }
       
+      // Detailed logging of request
+      const requestBody = { 
+        action: 'register',
+        name, 
+        email, 
+        password,
+        location
+      };
+      console.log('Registration request body:', JSON.stringify(requestBody));
+      
       // Call the register API with trailing slash to prevent redirect
       console.log('Making registration request to URL:', apiUrl);
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          action: 'register',
-          name, 
-          email, 
-          password,
-          location
-        }),
-      });
-
-      console.log('Registration response status:', response.status);
-      if (response.redirected) {
-        console.log('Registration was redirected to:', response.url);
-      }
-      
-      // Check if we got a valid JSON response
-      let data;
-      const contentType = response.headers.get('content-type');
-      console.log('Response content type:', contentType);
-      
       try {
-        if (contentType && contentType.includes('application/json')) {
-          data = await response.json();
-          console.log('Registration response data:', data);
-        } else {
-          const text = await response.text();
-          console.error('Non-JSON response:', text);
-          return { success: false, message: 'Server returned invalid response format' };
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        console.log('Registration response status:', response.status);
+        console.log('Registration response status text:', response.statusText);
+        if (response.redirected) {
+          console.log('Registration was redirected to:', response.url);
         }
-      } catch (parseError) {
-        console.error('Error parsing response:', parseError);
-        return { success: false, message: 'Could not parse server response' };
-      }
-      
-      if (response.ok) {
-        // Store token in localStorage
-        localStorage.setItem('authToken', data.token);
         
-        // Set auth state
-        setToken(data.token);
-        setUser(data.user);
-        setIsAuthenticated(true);
+        // Check if we got a valid JSON response
+        let data;
+        const contentType = response.headers.get('content-type');
+        console.log('Response content type:', contentType);
+        console.log('Response headers:', 
+          [...response.headers.entries()].reduce((obj, [key, val]) => {
+            obj[key] = val;
+            return obj;
+          }, {})
+        );
         
-        return { success: true, user: data.user };
-      } else {
-        return { success: false, message: data.error || 'Registration failed' };
+        try {
+          if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+            console.log('Registration response data:', data);
+          } else {
+            const text = await response.text();
+            console.error('Non-JSON response:', text);
+            return { success: false, message: 'Server returned invalid response format' };
+          }
+        } catch (parseError) {
+          console.error('Error parsing response:', parseError);
+          return { success: false, message: 'Could not parse server response' };
+        }
+        
+        if (response.ok) {
+          // Store token in localStorage
+          localStorage.setItem('authToken', data.token);
+          
+          // Set auth state
+          setToken(data.token);
+          setUser(data.user);
+          setIsAuthenticated(true);
+          
+          return { success: true, user: data.user };
+        } else {
+          return { success: false, message: data.error || 'Registration failed' };
+        }
+      } catch (fetchError) {
+        console.error('Fetch error during registration:', fetchError);
+        console.error('Fetch error name:', fetchError.name);
+        console.error('Fetch error message:', fetchError.message);
+        console.error('Fetch error stack:', fetchError.stack);
+        return { success: false, message: `Network error during registration: ${fetchError.message}` };
       }
     } catch (error) {
       console.error('Registration error:', error);
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       return { success: false, message: `An error occurred during registration: ${error.message}` };
     }
   };

@@ -10,6 +10,7 @@ const supabaseKey = process.env.SUPABASE_KEY;
 console.log('Auth function loaded');
 console.log('Supabase URL:', supabaseUrl);
 console.log('Supabase Key exists:', !!supabaseKey);
+console.log('Supabase Key first 10 chars:', supabaseKey ? supabaseKey.substring(0, 10) + '...' : 'undefined');
 console.log('JWT Secret length:', process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0);
 
 // Initialize Supabase client
@@ -130,9 +131,13 @@ exports.handler = async (event, context) => {
 
     // Test Supabase connection
     try {
+      console.log('Testing Supabase connection to users table...');
       const { data: connectionTest, error: connectionError } = await supabase.from('users').select('count', { count: 'exact', head: true });
       if (connectionError) {
         console.error('Supabase connection test failed:', connectionError);
+        console.error('Error code:', connectionError.code);
+        console.error('Error message:', connectionError.message);
+        console.error('Error details:', connectionError.details);
         return {
           statusCode: 500,
           headers,
@@ -142,6 +147,9 @@ exports.handler = async (event, context) => {
       console.log('Supabase connection test successful');
     } catch (error) {
       console.error('Error testing Supabase connection:', error);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       return {
         statusCode: 500,
         headers,
