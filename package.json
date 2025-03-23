@@ -12,7 +12,9 @@
     "use:dev": "node scripts/set-environment.js dev",
     "use:prod": "node scripts/set-environment.js prod",
     "dev:dev": "npm run use:dev && npm run netlify",
-    "dev:prod": "npm run use:prod && npm run netlify"
+    "dev:prod": "npm run use:prod && npm run netlify",
+    "init:prod-db": "node scripts/init-production-db.js",
+    "init:prod-db:samples": "node scripts/init-production-db.js --with-samples"
   },
   "keywords": [
     "plants",
