@@ -219,29 +219,9 @@ exports.handler = async (event, context) => {
           console.log('Generated avatar URL:', avatarUrl);
           
           // Create user
-          console.log('Creating new user in Supabase');
-          console.log('User data being inserted:', { email, name, location });
+          console.log('Creating new user in database');
           
-          // Check if the users table exists
-          const { data: tableExists, error: tableCheckError } = await supabase
-            .from('users')
-            .select('id', { count: 'exact', head: true });
-            
-          if (tableCheckError) {
-            console.error('Error verifying users table:', tableCheckError);
-            return {
-              statusCode: 500,
-              headers,
-              body: JSON.stringify({ 
-                error: 'Database error - users table might not exist', 
-                details: tableCheckError.message || tableCheckError.toString() 
-              }),
-            };
-          }
-          
-          console.log('Users table verification successful');
-          
-          // Insert the user
+          // Use standard insert
           const { data: newUser, error } = await supabase
             .from('users')
             .insert([
