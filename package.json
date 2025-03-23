@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "export": "next export",
-    "netlify": "netlify dev"
+    "netlify": "netlify dev",
+    "use:dev": "node scripts/set-environment.js dev",
+    "use:prod": "node scripts/set-environment.js prod",
+    "dev:dev": "npm run use:dev && npm run netlify",
+    "dev:prod": "npm run use:prod && npm run netlify"
   },
   "keywords": [
     "plants",
