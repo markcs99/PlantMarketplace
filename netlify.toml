@@ -3,6 +3,12 @@
   publish = ".next"
   functions = "netlify/functions"
 
+[build.environment]
+  NODE_ENV = "development"
+  NEXT_PUBLIC_ENV = "development"
+  # Ensure devDependencies are installed during build
+  NPM_FLAGS = "--production=false"
+
 [dev]
   targetPort = 3000
   port = 8888
@@ -22,16 +28,22 @@
 [context.production.environment]
   NODE_ENV = "production"
   NEXT_PUBLIC_ENV = "production"
+  # Ensure devDependencies are installed during build
+  NPM_FLAGS = "--production=false"
 
 # Branch deployments (dev branch)
 [context.dev.environment]
   NODE_ENV = "development"
   NEXT_PUBLIC_ENV = "development"
+  # Ensure devDependencies are installed during build
+  NPM_FLAGS = "--production=false"
 
 # Deploy preview settings (PRs)
 [context.deploy-preview.environment]
   NODE_ENV = "development"
   NEXT_PUBLIC_ENV = "development"
+  # Ensure devDependencies are installed during build
+  NPM_FLAGS = "--production=false"
 
 # Redirects for serverless functions
 [[redirects]]
